@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Data Petugas - BPS Monitoring{% endblock %}
+{% block page_title %}Data Petugas{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white py-3">
+        <h6 class="mb-0 fw-bold"><i class="fas fa-users me-2"></i>Daftar Petugas</h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>No</th>
+                        <th>NIP</th>
+                        <th>Nama</th>
+                        <th>No HP</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in petugas %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ p.nip }}</td>
+                        <td>{{ p.nama }}</td>
+                        <td>{{ p.no_hp }}</td>
+                        <td>
+                            {% if p.status_aktif %}
+                            <span class="badge bg-success">Aktif</span>
+                            {% else %}
+                            <span class="badge bg-danger">Tidak Aktif</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center text-muted py-3">Belum ada data petugas</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

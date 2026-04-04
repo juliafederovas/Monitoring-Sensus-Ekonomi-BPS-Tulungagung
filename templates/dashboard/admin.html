@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Admin - BPS Monitoring{% endblock %}
+{% block page_title %}Dashboard Admin{% endblock %}
+
+{% block content %}
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card blue p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <p class="text-muted small mb-1">Total Wilayah</p>
+                    <h3 class="fw-bold mb-0">{{ total_wilayah }}</h3>
+                </div>
+                <div class="bg-primary bg-opacity-10 rounded-circle p-3">
+                    <i class="fas fa-map-marker-alt text-primary fa-lg"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card green p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <p class="text-muted small mb-1">Total Petugas Aktif</p>
+                    <h3 class="fw-bold mb-0">{{ total_petugas }}</h3>
+                </div>
+                <div class="bg-success bg-opacity-10 rounded-circle p-3">
+                    <i class="fas fa-users text-success fa-lg"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card orange p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <p class="text-muted small mb-1">Total Laporan</p>
+                    <h3 class="fw-bold mb-0">{{ total_laporan }}</h3>
+                </div>
+                <div class="bg-warning bg-opacity-10 rounded-circle p-3">
+                    <i class="fas fa-file-alt text-warning fa-lg"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card red p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <p class="text-muted small mb-1">Total Kendala</p>
+                    <h3 class="fw-bold mb-0">{{ total_kendala }}</h3>
+                </div>
+                <div class="bg-danger bg-opacity-10 rounded-circle p-3">
+                    <i class="fas fa-exclamation-triangle text-danger fa-lg"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabel Laporan Terbaru & Kendala Terbaru -->
+<div class="row g-3">
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header bg-primary text-white py-3">
+                <h6 class="mb-0 fw-bold">
+                    <i class="fas fa-clock me-2"></i>Laporan Terbaru
+                </h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Petugas</th>
+                                <th>Tanggal</th>
+                                <th>Selesai</th>
+                                <th>Bermasalah</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for laporan in laporan_terbaru %}
+                            <tr>
+                                <td>{{ laporan.petugas.nama }}</td>
+                                <td>{{ laporan.tanggal_laporan }}</td>
+                                <td><span class="badge bg-success">{{ laporan.jumlah_selesai }}</span></td>
+                                <td><span class="badge bg-danger">{{ laporan.jumlah_bermasalah }}</span></td>
+                                <td>
+                                    {% if laporan.status_validasi == 'menunggu' %}
+                                    <span class="badge bg-warning text-dark">Menunggu</span>
+                                    {% elif laporan.status_validasi == 'disetujui' %}
+                                    <span class="badge bg-success">Disetujui</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Ditolak</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center text-muted py-3">Belum ada laporan</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header bg-danger text-white py-3">
+                <h6 class="mb-0 fw-bold">
+                    <i class="fas fa-exclamation-circle me-2"></i>Kendala Terbaru
+                </h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Jenis Kendala</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for kendala in kendala_terbaru %}
+                            <tr>
+                                <td>{{ kendala.get_jenis_kendala_display }}</td>
+                                <td>
+                                    {% if kendala.status_penanganan == 'belum' %}
+                                    <span class="badge bg-danger">Belum</span>
+                                    {% elif kendala.status_penanganan == 'proses' %}
+                                    <span class="badge bg-warning text-dark">Proses</span>
+                                    {% else %}
+                                    <span class="badge bg-success">Selesai</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="2" class="text-center text-muted py-3">Belum ada kendala</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
