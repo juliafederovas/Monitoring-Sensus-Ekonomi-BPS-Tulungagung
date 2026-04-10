@@ -125,8 +125,38 @@ def daftar_petugas(request):
 
 @login_required
 def validasi_laporan(request):
-    laporan = ProgresHarian.objects.filter(status_validasi='menunggu').order_by('-created_at')
-    return render(request, 'dashboard/validasi.html', {'laporan': laporan})
+    if request.method == 'POST':
+        laporan_id = request.POST.get('laporan_id')
+        aksi = request.POST.get('aksi')
+        try:
+            laporan = ProgresHarian.objects.get(id=laporan_id)
+            if aksi == 'approve':
+                laporan.status_validasi = 'disetujui'
+                laporan.validator = request.user
+                laporan.save()
+                messages.success(request, f'Laporan {laporan.petugas.nama} berhasil disetujui!')
+            elif aksi == 'reject':
+                laporan.status_validasi = 'ditolak'
+                laporan.validator = request.user
+                laporan.save()
+                messages.warning(request, f'Laporan {laporan.petugas.nama} ditolak!')
+        except Exception as e:
+            messages.error(request, f'Gagal memproses validasi: {e}')
+        return redirect('validasi_laporan')
+
+    laporan_menunggu = ProgresHarian.objects.filter(
+        status_validasi='menunggu'
+    ).order_by('-created_at')
+
+    laporan_selesai = ProgresHarian.objects.filter(
+        status_validasi__in=['disetujui', 'ditolak']
+    ).order_by('-updated_at')[:10]
+
+    context = {
+        'laporan_menunggu': laporan_menunggu,
+        'laporan_selesai': laporan_selesai,
+    }
+    return render(request, 'dashboard/validasi.html', context)
 
 @login_required
 def analisis_kendala(request):
@@ -140,7 +170,9 @@ def input_laporan(request):
         try:
             petugas = Petugas.objects.get(user=request.user)
             wilayah = Wilayah.objects.get(id=request.POST['wilayah'])
-            ProgresHarian.objects.create(
+
+            # Simpan progres harian
+            progres = ProgresHarian.objects.create(
                 petugas=petugas,
                 wilayah=wilayah,
                 tanggal_laporan=request.POST['tanggal_laporan'],
@@ -148,10 +180,26 @@ def input_laporan(request):
                 jumlah_bermasalah=request.POST['jumlah_bermasalah'],
                 catatan=request.POST.get('catatan', ''),
             )
-            messages.success(request, 'Laporan berhasil disimpan!')
+
+            # Simpan kendala kalau ada
+            jenis_list = request.POST.getlist('jenis_kendala[]')
+            deskripsi_list = request.POST.getlist('deskripsi_kendala[]')
+
+            for i, jenis in enumerate(jenis_list):
+                deskripsi = deskripsi_list[i] if i < len(deskripsi_list) else ''
+                if jenis and deskripsi:
+                    Kendala.objects.create(
+                        progres=progres,
+                        jenis_kendala=jenis,
+                        deskripsi=deskripsi,
+                    )
+
+            messages.success(request, 'Laporan dan kendala berhasil disimpan!')
             return redirect('dashboard_petugas')
+
         except Exception as e:
             messages.error(request, f'Gagal menyimpan laporan: {e}')
+
     wilayah_list = Wilayah.objects.all()
     return render(request, 'dashboard/input_laporan.html', {'wilayah_list': wilayah_list})
 
