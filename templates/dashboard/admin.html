@@ -60,7 +60,69 @@
     </div>
 </div>
 
-<!-- Tabel Laporan Terbaru & Kendala Terbaru -->
+<!-- Grafik -->
+<div class="row g-3 mb-4">
+    <!-- Grafik Progres Per Wilayah -->
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white py-3">
+                <h6 class="mb-0 fw-bold">
+                    <i class="fas fa-chart-bar me-2"></i>Progres Pendataan Per Wilayah
+                </h6>
+            </div>
+            <div class="card-body">
+                <canvas id="grafikProgres" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+    <!-- Grafik Jenis Kendala -->
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header bg-danger text-white py-3">
+                <h6 class="mb-0 fw-bold">
+                    <i class="fas fa-chart-pie me-2"></i>Jenis Kendala
+                </h6>
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                {% if kendala_data %}
+                <canvas id="grafikKendala"></canvas>
+                {% else %}
+                <p class="text-muted text-center">Belum ada data kendala</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Progres Bar Per Wilayah -->
+<div class="card mb-4">
+    <div class="card-header bg-success text-white py-3">
+        <h6 class="mb-0 fw-bold">
+            <i class="fas fa-tasks me-2"></i>Progres Per Wilayah
+        </h6>
+    </div>
+    <div class="card-body">
+        {% for item in progres_wilayah %}
+        <div class="mb-3">
+            <div class="d-flex justify-content-between mb-1">
+                <span class="fw-semibold small">{{ item.label }}</span>
+                <span class="small text-muted">
+                    {{ item.selesai }} / {{ item.target }} usaha
+                </span>
+            </div>
+            <div class="progress" style="height: 20px;">
+                <div class="progress-bar bg-success" style="width: {{ item.persen }}%">
+                    {{ item.persen }}%
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-muted text-center">Belum ada data progres</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Tabel Laporan & Kendala Terbaru -->
 <div class="row g-3">
     <div class="col-md-7">
         <div class="card">
@@ -75,9 +137,9 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Petugas</th>
+                                <th>Wilayah</th>
                                 <th>Tanggal</th>
                                 <th>Selesai</th>
-                                <th>Bermasalah</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
@@ -85,9 +147,9 @@
                             {% for laporan in laporan_terbaru %}
                             <tr>
                                 <td>{{ laporan.petugas.nama }}</td>
+                                <td>{{ laporan.wilayah.nama_kecamatan|default:"-" }}</td>
                                 <td>{{ laporan.tanggal_laporan }}</td>
                                 <td><span class="badge bg-success">{{ laporan.jumlah_selesai }}</span></td>
-                                <td><span class="badge bg-danger">{{ laporan.jumlah_bermasalah }}</span></td>
                                 <td>
                                     {% if laporan.status_validasi == 'menunggu' %}
                                     <span class="badge bg-warning text-dark">Menunggu</span>
@@ -147,4 +209,80 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Data dari Django
+const labels = {{ grafik_labels|safe }};
+const dataSelesai = {{ grafik_selesai|safe }};
+const dataTarget = {{ grafik_target|safe }};
+const dataBermasalah = {{ grafik_bermasalah|safe }};
+
+// Grafik Progres Per Wilayah (Bar Chart)
+const ctxProgres = document.getElementById('grafikProgres').getContext('2d');
+new Chart(ctxProgres, {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [
+            {
+                label: 'Target',
+                data: dataTarget,
+                backgroundColor: 'rgba(26, 60, 94, 0.3)',
+                borderColor: '#1a3c5e',
+                borderWidth: 2,
+            },
+            {
+                label: 'Selesai',
+                data: dataSelesai,
+                backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                borderColor: '#28a745',
+                borderWidth: 2,
+            },
+            {
+                label: 'Bermasalah',
+                data: dataBermasalah,
+                backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                borderColor: '#dc3545',
+                borderWidth: 2,
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'top' },
+            title: { display: false }
+        },
+        scales: {
+            y: { beginAtZero: true }
+        }
+    }
+});
+
+{% if kendala_data %}
+// Grafik Jenis Kendala (Pie Chart)
+const ctxKendala = document.getElementById('grafikKendala').getContext('2d');
+new Chart(ctxKendala, {
+    type: 'doughnut',
+    data: {
+        labels: {{ kendala_labels|safe }},
+        datasets: [{
+            data: {{ kendala_data|safe }},
+            backgroundColor: [
+                '#1a3c5e', '#28a745', '#dc3545',
+                '#fd7e14', '#6f42c1', '#20c997', '#ffc107'
+            ],
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'bottom' }
+        }
+    }
+});
+{% endif %}
+</script>
 {% endblock %}
