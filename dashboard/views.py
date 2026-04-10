@@ -70,11 +70,14 @@ def analisis_kendala(request):
 
 @login_required
 def input_laporan(request):
+    from wilayah.models import Wilayah
     if request.method == 'POST':
         try:
             petugas = Petugas.objects.get(user=request.user)
+            wilayah = Wilayah.objects.get(id=request.POST['wilayah'])
             ProgresHarian.objects.create(
                 petugas=petugas,
+                wilayah=wilayah,
                 tanggal_laporan=request.POST['tanggal_laporan'],
                 jumlah_selesai=request.POST['jumlah_selesai'],
                 jumlah_bermasalah=request.POST['jumlah_bermasalah'],
@@ -84,7 +87,8 @@ def input_laporan(request):
             return redirect('dashboard_petugas')
         except Exception as e:
             messages.error(request, f'Gagal menyimpan laporan: {e}')
-    return render(request, 'dashboard/input_laporan.html')
+    wilayah_list = Wilayah.objects.all()
+    return render(request, 'dashboard/input_laporan.html', {'wilayah_list': wilayah_list})
 
 @login_required
 def riwayat_laporan(request):

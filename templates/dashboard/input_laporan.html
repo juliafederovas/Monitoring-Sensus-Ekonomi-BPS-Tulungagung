@@ -19,9 +19,18 @@
                         <label class="form-label fw-semibold">Tanggal Laporan</label>
                         <input type="date" name="tanggal_laporan" class="form-control" required>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Wilayah Tugas</label>
+                        <select name="wilayah" class="form-select" required>
+                            <option value="">-- Pilih Wilayah --</option>
+                            {% for w in wilayah_list %}
+                            <option value="{{ w.id }}">{{ w.nama_kecamatan }} - {{ w.nama_kelurahan }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Jumlah Usaha Selesai Didata</label>
+                            <label class="form-label fw-semibold">Jumlah Usaha Selesai</label>
                             <input type="number" name="jumlah_selesai" class="form-control" min="0" value="0" required>
                         </div>
                         <div class="col-md-6">

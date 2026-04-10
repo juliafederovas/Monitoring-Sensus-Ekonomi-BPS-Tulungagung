@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from wilayah.models import Wilayah
 import uuid
 
 class Petugas(models.Model):
@@ -27,6 +28,7 @@ class ProgresHarian(models.Model):
     ]
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     petugas = models.ForeignKey(Petugas, on_delete=models.CASCADE)
+    wilayah = models.ForeignKey(Wilayah, on_delete=models.SET_NULL, null=True, blank=True)  # field baru
     tanggal_laporan = models.DateField()
     jumlah_selesai = models.IntegerField(default=0)
     jumlah_bermasalah = models.IntegerField(default=0)
